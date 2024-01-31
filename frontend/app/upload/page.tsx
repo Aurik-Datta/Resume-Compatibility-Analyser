@@ -2,7 +2,7 @@
 // app/upload/page.tsx
 import React, {useState} from 'react';
 import { Button, Typography, Container, Grid } from '@mui/material';
-
+import { uploadFiles } from '../api/api';
 const UploadPage = () => {
   // State to store selected files
   const [selectedFiles, setSelectedFiles] = useState<Array<File>>([]);
@@ -13,14 +13,20 @@ const UploadPage = () => {
             setSelectedFiles(Array.from(event.target.files));
         }
     }
-  // Function to handle file upload
-  const handleUpload = () => {
-    if (selectedFiles) {
-      // Logic to handle file upload using Azure Blob Storage
-      console.log(selectedFiles);
-      console.log(typeof selectedFiles);
+  // Async Function to handle file upload
+
+  const handleUpload = async () => {
+    try {
+        const formData = new FormData();
+        selectedFiles.forEach(file => formData.append('files', file));
+        const response = await uploadFiles(formData);
+        console.log(response);
     }
-  };
+    catch (err) {
+        console.error(err);
+    }
+}
+  
 
   return (
     <Container sx={{ mt: 4 }}>
