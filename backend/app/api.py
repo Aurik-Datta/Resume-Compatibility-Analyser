@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from database.blob import save_to_blob
+from app.blob import analyse_hardcoded_resume, analyse_resumes
 
 app = FastAPI()
 
@@ -41,4 +41,5 @@ async def ping() -> dict:
 
 @app.post("/api/uploadFiles")
 async def upload_files(files: list[UploadFile] = File(...)) -> dict:
-    return await save_to_blob(files)
+    print("hello")
+    return await analyse_resumes(files)
