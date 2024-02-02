@@ -108,63 +108,62 @@ async def save_to_blob(files: list[UploadFile]) -> dict:
 
 #analyse resumes
 async def analyse_resumes(files: list[UploadFile]) -> dict:
-    # blob_service_client = get_blob_service_client()
-    # container_client = blob_service_client.get_container_client(STORAGE_CONTAINER_NAME)
-    # form_recognizer_client = get_form_recognizer_client()
-    # text_analytics_client = get_text_analytics_client()
-    # save_result = await save_to_blob(files)
-    # try:
-    #     blob_urls = save_result.get("blob_urls", [])
-    #     sas_token = os.getenv("AZURE_STORAGE_SAS_TOKEN")
-    #     # append ?sas_token to all blob_urls
-    #     blob_urls = [f"{url}?{sas_token}" for url in blob_urls]
+    blob_service_client = get_blob_service_client()
+    container_client = blob_service_client.get_container_client(STORAGE_CONTAINER_NAME)
+    form_recognizer_client = get_form_recognizer_client()
+    text_analytics_client = get_text_analytics_client()
+    save_result = await save_to_blob(files)
+    try:
+        blob_urls = save_result.get("blob_urls", [])
+        sas_token = os.getenv("AZURE_STORAGE_SAS_TOKEN")
+        # append ?sas_token to all blob_urls
+        blob_urls = [f"{url}?{sas_token}" for url in blob_urls]
 
-    #     text_analytics_actions = [
-    #         RecognizeEntitiesAction(),
-    #         # RecognizeLinkedEntitiesAction(),
-    #         # RecognizePiiEntitiesAction(),
-    #         # ExtractKeyPhrasesAction(),
-    #         # AnalyzeSentimentAction(),
-    #     ]
+        text_analytics_actions = [
+            RecognizeEntitiesAction(),
+            # RecognizeLinkedEntitiesAction(),
+            # RecognizePiiEntitiesAction(),
+            # ExtractKeyPhrasesAction(),
+            # AnalyzeSentimentAction(),
+        ]
 
-    #     # extract content from resumes using form recognizer
-    #     for url in blob_urls:
-    #         poller = form_recognizer_client.begin_analyze_document_from_url("prebuilt-document", url)
-    #         result = poller.result()
-    #         # combine "all the lines of content in the resume into a list for text analysis
-    #         content = ""
-    #         for page in result.pages:
-    #             for line in page.lines:
-    #                 content+= line.content
+        # extract content from resumes using form recognizer
+        for url in blob_urls:
+            poller = form_recognizer_client.begin_analyze_document_from_url("prebuilt-document", url)
+            result = poller.result()
+            # combine "all the lines of content in the resume into a list for text analysis
+            content = ""
+            for page in result.pages:
+                for line in page.lines:
+                    content+= line.content
 
-    #         # analyse the content using text analytics
-    #         response = text_analytics_client.begin_analyze_actions(
-    #             documents=[{"id": "1", "text": content}],
-    #             actions=text_analytics_actions,
-    #         ).result()
-    #         for document_analysis in response:
-    #             recognized_entities = []
-    #             print(len(document_analysis))
-    #             for analysis_result in document_analysis:
-    #                 if analysis_result.kind == "EntityRecognition":
-    #                     recognized_entities = analysis_result.entities
-    #                 #pretty_print_analysis_result(analysis_result)
+            # analyse the content using text analytics
+            response = text_analytics_client.begin_analyze_actions(
+                documents=[{"id": "1", "text": content}],
+                actions=text_analytics_actions,
+            ).result()
+            for document_analysis in response:
+                recognized_entities = []
+                print(len(document_analysis))
+                for analysis_result in document_analysis:
+                    if analysis_result.kind == "EntityRecognition":
+                        recognized_entities = analysis_result.entities
+                    #pretty_print_analysis_result(analysis_result)
 
-    #             # filter skills from recognized entities
-    #             skills = [entity.text for entity in recognized_entities if entity.category == "Skill"]
-    #             print("SKILLS: ")
-    #             for skill in skills:
-    #                 print(skill)
+                # filter skills from recognized entities
+                skills = [entity.text for entity in recognized_entities if entity.category == "Skill"]
+                print("SKILLS: ")
+                for skill in skills:
+                    print(skill)
 
 
-    # finally:
-    #     # delete blobs after analysis
-    #     for file in files:
-    #         try:
-    #             blob_name = file.filename  # Ensure this matches the blob's name used when uploading
-    #             container_client.delete_blob(blob_name)
-    #             print(f"Successfully deleted blob: {blob_name}")
-    #         except Exception as e:
-    #             print(f"Failed to delete blob: {e}")
-    print(os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
+    finally:
+        # delete blobs after analysis
+        for file in files:
+            try:
+                blob_name = file.filename  # Ensure this matches the blob's name used when uploading
+                container_client.delete_blob(blob_name)
+                print(f"Successfully deleted blob: {blob_name}")
+            except Exception as e:
+                print(f"Failed to delete blob: {e}")
     return {"message": "success"}
