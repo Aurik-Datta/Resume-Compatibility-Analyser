@@ -5,6 +5,7 @@
 azure-functions
 fastapi[all]
 azure.ai.formrecognizer
+azure.ai.textanalytics
 azure.core
 cryptography
 azure-storage-blob

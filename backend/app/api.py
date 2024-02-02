@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from app.blob import analyse_hardcoded_resume, analyse_resumes
+from app.blob import analyse_resumes
 
 app = FastAPI()
 
