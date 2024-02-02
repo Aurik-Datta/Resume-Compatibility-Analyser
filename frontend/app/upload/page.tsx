@@ -1,68 +1,66 @@
 "use client"
-// app/upload/page.tsx
-import React, {useState} from 'react';
-import { Button, Typography, Container, Grid } from '@mui/material';
-import { uploadFiles } from '../api/api';
-const UploadPage = () => {
-  // State to store selected files
-  const [selectedFiles, setSelectedFiles] = useState<Array<File>>([]);
+import {useState} from 'react';
+import UploadResume from "./UploadResume";
+import EnterJobDes from "./EnterJobDes";
+import { Container, Grid, Button, Snackbar, Alert } from "@mui/material";
+import { uploadFiles } from "../api/api";
 
-    // Function to handle file change
-    const handleFileChange = () => (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setSelectedFiles(Array.from(event.target.files));
+const UploadPage = () => {
+    const [selectedFiles, setSelectedFiles] = useState<Array<File>>([]);
+    const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+    const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+    const handleSubmit = async () => {
+        try {
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('files', file));
+            const response = await uploadFiles(formData);
+            console.log(response);
+            // Set message for successful submission
+            setSnackbarMessage('Successfully submitted!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+
+        }
+        catch (err) {
+            console.error(err);
+            setSnackbarMessage('Error submitting data.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+
         }
     }
-  // Async Function to handle file upload
 
-  const handleUpload = async () => {
-    try {
-        const formData = new FormData();
-        selectedFiles.forEach(file => formData.append('files', file));
-        const response = await uploadFiles(formData);
-        console.log(response);
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-  
+    const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
 
-  return (
-    <Container sx={{ mt: 4 }}>
+
+    return (
+    <Container sx={{ mt: 4, height:"100vh" }}>
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <Typography variant="h4">Upload Resumes</Typography>
+            <Grid item xs={6}>
+                <UploadResume selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} />
             </Grid>
-
-            <Grid item xs={12}>
-                <Grid container spacing={2}>
-                    <Grid item xs={2}>
-                        <Button variant="contained" component="label">
-                            Select Files
-                            <input
-                                type="file"
-                                multiple
-                                hidden
-                                accept = "application/pdf"
-                                onChange={handleFileChange()}
-                            />
-                        </Button>
-                    </Grid>
-                    <Grid item xs={10}>
-                        <Typography variant="body1" align='left'>
-                            {selectedFiles.length} files selected
-                        </Typography>
-                    </Grid>
-                </Grid>
+            <Grid item xs={6}>
+                <EnterJobDes />
             </Grid>
             <Grid item xs={12}>
-                <Button variant="contained" color="primary" onClick={handleUpload} hidden={!selectedFiles.length}>
-                    Upload
+                <Button variant="contained" color="primary" component="label" fullWidth disabled={!selectedFiles.length} onClick={handleSubmit} sx={{mt: 3}}>
+                    Submit
                 </Button>
             </Grid>
-
         </Grid>
+        <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={handleCloseSnackbar}>
+            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                {snackbarMessage}
+            </Alert>
+        </Snackbar>
+
     </Container>
   );
 };
