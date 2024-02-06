@@ -105,6 +105,25 @@ async def save_to_blob(files: list[UploadFile]) -> dict:
         blob_url = f"{container_client.url}/{file.filename}"
         blob_urls.append(blob_url)
     return {"message": "success", "blob_urls": blob_urls}
+async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsClient) -> list[str]:
+    text_analytics_actions = [
+        RecognizeEntitiesAction(),
+    ]
+    response = text_analytics_client.begin_analyze_actions(
+        documents=[text],
+        actions=text_analytics_actions,
+    ).result()
+    recognized_entities = []
+    for document_analysis in response:
+        for analysis_result in document_analysis:
+            if analysis_result.kind == "EntityRecognition":
+                recognized_entities = analysis_result.entities
+            #pretty_print_analysis_result(analysis_result)
+
+    # filter skills from recognized entities
+    skills = list(set([entity.text.lower() for entity in recognized_entities if entity.category == "Skill"]))
+    print("Skills extracted!")
+    return skills
 
 #analyse resumes
 async def analyse_resumes(files: list[UploadFile]) -> dict:
@@ -113,20 +132,13 @@ async def analyse_resumes(files: list[UploadFile]) -> dict:
     form_recognizer_client = get_form_recognizer_client()
     text_analytics_client = get_text_analytics_client()
     save_result = await save_to_blob(files)
+    print("Saved files to blob")
+    all_skills = []
     try:
         blob_urls = save_result.get("blob_urls", [])
         sas_token = os.getenv("AZURE_STORAGE_SAS_TOKEN")
         # append ?sas_token to all blob_urls
         blob_urls = [f"{url}?{sas_token}" for url in blob_urls]
-
-        text_analytics_actions = [
-            RecognizeEntitiesAction(),
-            # RecognizeLinkedEntitiesAction(),
-            # RecognizePiiEntitiesAction(),
-            # ExtractKeyPhrasesAction(),
-            # AnalyzeSentimentAction(),
-        ]
-
         # extract content from resumes using form recognizer
         for url in blob_urls:
             poller = form_recognizer_client.begin_analyze_document_from_url("prebuilt-document", url)
@@ -136,27 +148,11 @@ async def analyse_resumes(files: list[UploadFile]) -> dict:
             for page in result.pages:
                 for line in page.lines:
                     content+= line.content
+            print("Content extracted from blob ", url)
 
             # analyse the content using text analytics
-            response = text_analytics_client.begin_analyze_actions(
-                documents=[{"id": "1", "text": content}],
-                actions=text_analytics_actions,
-            ).result()
-            for document_analysis in response:
-                recognized_entities = []
-                print(len(document_analysis))
-                for analysis_result in document_analysis:
-                    if analysis_result.kind == "EntityRecognition":
-                        recognized_entities = analysis_result.entities
-                    #pretty_print_analysis_result(analysis_result)
-
-                # filter skills from recognized entities
-                skills = [entity.text for entity in recognized_entities if entity.category == "Skill"]
-                print("SKILLS: ")
-                for skill in skills:
-                    print(skill)
-
-
+            skills = await get_skills_from_text(content, text_analytics_client)
+            all_skills.append(skills)
     finally:
         # delete blobs after analysis
         for file in files:
@@ -166,4 +162,8 @@ async def analyse_resumes(files: list[UploadFile]) -> dict:
                 print(f"Successfully deleted blob: {blob_name}")
             except Exception as e:
                 print(f"Failed to delete blob: {e}")
-    return {"message": "success"}
+    return {"skills": all_skills}
+
+async def analyse_job_description(job_description: str) -> dict:
+    text_analytics_client = get_text_analytics_client()
+    return {"skills": await get_skills_from_text(job_description, text_analytics_client)}

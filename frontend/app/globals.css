@@ -31,3 +31,29 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Custom scrollbar for WebKit browsers */
+::-webkit-scrollbar {
+  width: 12px; /* Adjust the width of the scrollbar as needed */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Makes the track transparent */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #359D49; /* Color of the scrollbar thumb */
+  border-radius: "50%"; /* Rounds the corners of the scrollbar thumb for a pill-like appearance */
+  border: 2px solid transparent; /* Optional: can be set to transparent if you don't want a border */
+}
+
+/* Hover effects for WebKit scrollbar thumb */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #2c7a3f; /* Slightly darker shade of green for hover effect */
+}
+
+/* Custom scrollbar for Firefox */
+* {
+  scrollbar-width: thin; /* "auto" or "thin" makes the scrollbar less intrusive */
+  scrollbar-color: #359D49 transparent; /* Thumb color and transparent track */
+}

@@ -1,6 +1,9 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from app.blob import analyse_resumes
+from app.blob import analyse_resumes, analyse_job_description
+from pydantic import BaseModel
+
+
 
 app = FastAPI()
 
@@ -28,18 +31,17 @@ async def root() -> dict:
 async def ping() -> dict:
     return {"ping": "pong"}
 
-
-#usage
-# export const uploadFiles = async (formData: FormData) => {
-#     const response = await api.post('/uploadFiles', formData, {
-#         headers: {
-#         'Content-Type': 'multipart/form-data',
-#         },
-#     });
-#     return response.data;
-# } 
-
-@app.post("/api/uploadFiles")
-async def upload_files(files: list[UploadFile] = File(...)) -> dict:
-    print("hello")
+@app.post("/api/analyseResumes")
+async def analyseResumes(files: list[UploadFile] = File(...)) -> dict:
+    print("Analyse Resumes API called...")
     return await analyse_resumes(files)
+
+
+class AnalyseJobDescriptionRequest(BaseModel):
+    job_description: str
+
+
+@app.post("/api/analyseJobDescription")
+async def analyseJobDescription(request: AnalyseJobDescriptionRequest) -> dict:
+    print("Analyse Job Description API called...")
+    return await analyse_job_description(request.job_description)
