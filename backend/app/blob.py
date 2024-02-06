@@ -1,3 +1,4 @@
+import re
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
@@ -12,9 +13,15 @@ from azure.ai.textanalytics import (
 import os
 from dotenv import load_dotenv
 from fastapi import UploadFile
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet as wn
+import nltk
+
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path)
+nltk.download('wordnet')
+lemmatizer = WordNetLemmatizer()
 
 #CONSTANTS
 STORAGE_CONTAINER_NAME = "resume-container"
@@ -105,6 +112,20 @@ async def save_to_blob(files: list[UploadFile]) -> dict:
         blob_url = f"{container_client.url}/{file.filename}"
         blob_urls.append(blob_url)
     return {"message": "success", "blob_urls": blob_urls}
+
+#text analysis
+def lemmatize_skills(skills: list[str]) -> list[str]:
+    lemmatized_skills = [lemmatizer.lemmatize(skill, pos=wn.VERB) for skill in skills]
+    return lemmatized_skills
+
+
+def preprocess_text(text: str) -> str:
+    # Remove special characters and digits
+    text_cleaned = re.sub(r'[^a-zA-Z\s]', '', text)
+    # Remove extra spaces
+    text_cleaned = re.sub(r'\s+', ' ', text_cleaned).strip()
+    return text_cleaned
+
 async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsClient) -> list[str]:
     text_analytics_actions = [
         RecognizeEntitiesAction(),
@@ -123,7 +144,9 @@ async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsCl
     # filter skills from recognized entities
     skills = list(set([entity.text.lower() for entity in recognized_entities if entity.category == "Skill"]))
     print("Skills extracted!")
-    return skills
+    lemmatized_skills = list(set(lemmatize_skills(skills)))
+    print("Skills lemmatized!")
+    return lemmatized_skills
 
 #analyse resumes
 async def analyse_resumes(files: list[UploadFile]) -> dict:

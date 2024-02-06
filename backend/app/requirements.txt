@@ -13,3 +13,4 @@ azure-identity
 requests
 pandas
 numpy
+nltk
