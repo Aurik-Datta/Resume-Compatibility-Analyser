@@ -9,10 +9,11 @@ import { analyseCompatibility, CompatibilityListElement } from "../api/api";
 const UploadPage = () => {
     const [jobDes, setJobDes] = useState<string>('');
     const [selectedFiles, setSelectedFiles] = useState<Array<File>>([]);
-    const [compatibilityList, setCompatibilityList] = useState<Array<CompatibilityListElement>>([]); // [{file: File, compatibility: number, compat_skills: Array<string>}]
+    const [sortedList, setSortedList] = useState<Array<CompatibilityListElement>>([]); // [{file: File, compatibility: number, compat_skills: Array<string>}]
     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [jobDesSkillList, setJobDesSkillList] = useState<Array<string>>([]);
 
     const handleSubmit = async () => {
         if (!selectedFiles.length) {
@@ -40,10 +41,11 @@ const UploadPage = () => {
             const response = await analyseCompatibility(selectedFiles, jobDes);
             console.log(response);
             // sort by score and set state
-            const sortedList = response.sort((a: CompatibilityListElement, b: CompatibilityListElement) => b.compatibility - a.compatibility);
-            setCompatibilityList(sortedList);
+            const sorted = response.sort((a: CompatibilityListElement, b: CompatibilityListElement) => b.compatibility - a.compatibility);
+            setSortedList(sorted);
+            setJobDesSkillList(response ? response[0].jobDes_skills : []);
             // Set message for successful submission
-            setSnackbarMessage('Successfully submitted!');
+            setSnackbarMessage('Analysis succesfiul!');
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
 
@@ -68,23 +70,23 @@ const UploadPage = () => {
     return (
     <Container sx={{ mt: 4, minHeight:"100vh" }}>
         <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item xs={6} sx={{paddingRight:"16px"}}>
                 <UploadResume selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={6} sx={{paddingRight:"16px"}}>
                 <EnterJobDes
                     jobDes={jobDes}
                     setJobDes={setJobDes}
                 />
             </Grid>
             <Grid item xs={12} sx={{textAlign: 'center'}}>
-                <Button variant="contained" color="primary" component="label"  disabled={!selectedFiles.length} onClick={handleSubmit} sx={{mt: 3, pl:5, pr: 5, borderRadius:25}}>
+                <Button fullWidth variant="contained" color="primary" component="label"  disabled={!selectedFiles.length} onClick={handleSubmit} sx={{mt: 3, pl:5, pr: 5, borderRadius:25}}>
                     Submit
                 </Button>
             </Grid>
             <Grid item xs={12}>
-                <div hidden={!compatibilityList.length}>
-                    <RankedResumes compatibilityList={compatibilityList} />
+                <div>
+                    <RankedResumes sortedList={sortedList} setSortedList={setSortedList} jobDesSkillList={jobDesSkillList} />
                 </div>
                 
             </Grid>
