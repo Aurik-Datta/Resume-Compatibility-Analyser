@@ -48,7 +48,7 @@ export const analyseCompatibility : any = async (selectedFiles: Array<File>, job
     const compatibility_list: Array<CompatibilityListElement>  = [];
     resume_skill_list.forEach((resume_skills : Array<string>, index: number) => {
         const compat_skills = resume_skills.filter((skill) => jobDes_skill_list.includes(skill));
-        const compatibility = compat_skills.length / jobDes_skill_list.length;
+        const compatibility = jobDes_skill_list.length ? compat_skills.length / jobDes_skill_list.length: 0;
         compatibility_list.push({
             file_name: selectedFiles[index].name,
             compat_skills,
