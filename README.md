@@ -1,5 +1,5 @@
 # Resume-Compatibility-Analyser
-## Check how compatible resumes are to a job description \
+## Check how compatible resumes are to a job description
 
 Utilises the following Azure services: 
 - Azure AI Document Intelligence
