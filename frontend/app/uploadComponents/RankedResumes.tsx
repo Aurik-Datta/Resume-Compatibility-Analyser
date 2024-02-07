@@ -66,7 +66,7 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
     const FilterJobDesSkills = () => {
         return (
             <Accordion defaultExpanded={jobDesSkillList.length > 0}>
-            <AccordionSummary sx={{ bgcolor: '#359D49', color: 'white' }}><Typography>Filter Job Description Skills</Typography></AccordionSummary>
+            <AccordionSummary sx={{ bgcolor: '#164296', color: 'white' }}><Typography>Filter Job Description Skills</Typography></AccordionSummary>
             <AccordionDetails>
                 <Grid container spacing={1}>
                     {jobDesSkillList.map((skill) => (
@@ -74,6 +74,11 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
                             <Chip label={skill}
                                 clickable
                                 color={disabledSkills.includes(skill) ? "secondary" : "primary"}
+                                sx = {{
+                                    '& .MuiChip-label': {
+                                        color: !disabledSkills.includes(skill) ? 'white' : '#164296'
+                                    }
+                                }}
                                 onClick={() => handleToggleSkill(skill)}
                             />
                         </Grid>
@@ -116,7 +121,7 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
                         <Grid container spacing={1}>
                         {item.jobDes_skills.map((skill) => (
                             <Grid item key={skill}>
-                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "primary" : "error"} />
+                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "success" : "error"} />
                             </Grid>
                         ))}
                         </Grid>
@@ -124,7 +129,7 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
                         <Grid container spacing={1}>
                         {item.resume_skills.map((skill) => (
                             <Grid item key={skill}>
-                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "primary" : "error"} />
+                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "success" : "error"} />
                             </Grid>
                         ))}
                         </Grid>

@@ -25,6 +25,9 @@ const EnterJobDes = ({jobDes, setJobDes}: EnterJobDesProps) => {
                     value={jobDes}
                     onChange={handleJobDesChange()}
                     variant="outlined"
+                    sx = {{
+                        '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#164296', }, '&:hover fieldset': { borderColor: '#164296', }}
+                    }}
             />
             </Grid>
         </Grid>

@@ -21,7 +21,7 @@ const UploadResume = ({ selectedFiles, setSelectedFiles }: UploadResumeProps) =>
                     width: '100%',
                 
                     justifyContent: 'center',
-                    border: '1px solid #359D49',
+                    border: '1px solid #164296',
                     borderRadius: 1,
                     alignItems: 'center',
                     cursor: 'pointer',
@@ -47,7 +47,10 @@ const UploadResume = ({ selectedFiles, setSelectedFiles }: UploadResumeProps) =>
                                         fontSize: 12,
                                         fontFamily: 'Fenix',
                                         '& .MuiChip-deleteIcon': {
-                                            color: '#359D49'
+                                            color: '#164296'
+                                        },
+                                        '& .MuiChip-label': {
+                                            color: '#164296'
                                         }
                                     }} 
                                 />
@@ -80,7 +83,7 @@ const UploadResume = ({ selectedFiles, setSelectedFiles }: UploadResumeProps) =>
                         width: '100%',
                         display: 'flex',
                         justifyContent: 'center',
-                        border: '1px solid #359D49',
+                        border: '1px solid #164296',
                         borderRadius: 1,
                         alignItems: 'center',
                         padding: 2  ,

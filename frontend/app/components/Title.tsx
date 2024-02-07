@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 // Styled container with button-like appearance
 const TitleContainer = styled(Box)(({ theme }) => ({
   backgroundColor: 'white',
-  border: `1px solid #359D49`,
+  border: `1px solid #164296`,
   //rounded corners
   borderRadius: 20,
   paddingLeft: 25,

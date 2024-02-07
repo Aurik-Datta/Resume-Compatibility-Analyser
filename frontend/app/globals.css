@@ -42,7 +42,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #359D49; /* Color of the scrollbar thumb */
+  background-color: #164296; /* Color of the scrollbar thumb */
   border-radius: "50%"; /* Rounds the corners of the scrollbar thumb for a pill-like appearance */
   border: 2px solid transparent; /* Optional: can be set to transparent if you don't want a border */
 }
@@ -55,5 +55,5 @@ body {
 /* Custom scrollbar for Firefox */
 * {
   scrollbar-width: thin; /* "auto" or "thin" makes the scrollbar less intrusive */
-  scrollbar-color: #359D49 transparent; /* Thumb color and transparent track */
+  scrollbar-color: #164296 transparent; /* Thumb color and transparent track */
 }
