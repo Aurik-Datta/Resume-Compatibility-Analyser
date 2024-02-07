@@ -1,4 +1,5 @@
 import re
+import asyncio
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
@@ -20,7 +21,7 @@ import nltk
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path)
-nltk.download('wordnet')
+# nltk.download('wordnet')
 lemmatizer = WordNetLemmatizer()
 
 #CONSTANTS
@@ -126,6 +127,8 @@ def preprocess_text(text: str) -> str:
     text_cleaned = re.sub(r'\s+', ' ', text_cleaned).strip()
     return text_cleaned
 
+    
+
 async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsClient) -> list[str]:
     text_analytics_actions = [
         RecognizeEntitiesAction(),
@@ -148,6 +151,19 @@ async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsCl
     print("Skills lemmatized!")
     return lemmatized_skills
 
+
+async def analyse_document(url: str, form_recognizer_client: DocumentAnalysisClient):
+    poller = form_recognizer_client.begin_analyze_document_from_url("prebuilt-document", url)
+    result = poller.result()
+    # combine "all the lines of content in the resume into a list for text analysis
+    content = ""
+    for page in result.pages:
+        for line in page.lines:
+            content+= line.content
+    print("Content extracted from blob ", url)
+    return content
+
+
 #analyse resumes
 async def analyse_resumes(files: list[UploadFile]) -> dict:
     blob_service_client = get_blob_service_client()
@@ -163,19 +179,10 @@ async def analyse_resumes(files: list[UploadFile]) -> dict:
         # append ?sas_token to all blob_urls
         blob_urls = [f"{url}?{sas_token}" for url in blob_urls]
         # extract content from resumes using form recognizer
-        for url in blob_urls:
-            poller = form_recognizer_client.begin_analyze_document_from_url("prebuilt-document", url)
-            result = poller.result()
-            # combine "all the lines of content in the resume into a list for text analysis
-            content = ""
-            for page in result.pages:
-                for line in page.lines:
-                    content+= line.content
-            print("Content extracted from blob ", url)
-
-            # analyse the content using text analytics
-            skills = await get_skills_from_text(content, text_analytics_client)
-            all_skills.append(skills)
+        form_recognizer_tasks = [analyse_document(url, form_recognizer_client) for url in blob_urls]
+        contents = await asyncio.gather(*form_recognizer_tasks)
+        text_analytics_tasks = [get_skills_from_text(content, text_analytics_client) for content in contents]
+        all_skills = await asyncio.gather(*text_analytics_tasks)
     finally:
         # delete blobs after analysis
         for file in files:
