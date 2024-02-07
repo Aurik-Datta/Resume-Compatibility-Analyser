@@ -3,7 +3,8 @@ import {useState} from 'react';
 import UploadResume from "./UploadResume";
 import EnterJobDes from "./EnterJobDes";
 import RankedResumes from './RankedResumes';
-import { Container, Grid, Button, Snackbar, Alert } from "@mui/material";
+import HOneFooter from '../components/HOneFooter';
+import { Container, Grid, Button, Snackbar, Alert, Box } from "@mui/material";
 import { analyseCompatibility, CompatibilityListElement } from "../api/api";
 
 const UploadPage = () => {
@@ -68,7 +69,8 @@ const UploadPage = () => {
 
 
     return (
-    <Container sx={{ mt: 4, minHeight:"100vh" }}>
+    <Box display="flex" flexDirection="column" minHeight="100vh"> {/* Flex container */}
+        <Container sx={{ mt: 4, flex: '1 0 auto' }}> {/* Content container */}
         <Grid container spacing={2}>
             <Grid item xs={6} sx={{paddingRight:"16px"}}>
                 <UploadResume selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} />
@@ -85,19 +87,22 @@ const UploadPage = () => {
                 </Button>
             </Grid>
             <Grid item xs={12}>
-                <div>
+                <div hidden={!sortedList.length}>
                     <RankedResumes sortedList={sortedList} setSortedList={setSortedList} jobDesSkillList={jobDesSkillList} />
                 </div>
                 
             </Grid>
         </Grid>
+        {/* Snackbar for error/success messages */}
         <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={handleCloseSnackbar}>
             <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
                 {snackbarMessage}
             </Alert>
         </Snackbar>
 
-    </Container>
+        </Container>
+        <HOneFooter />
+    </Box>
   );
 };
 
