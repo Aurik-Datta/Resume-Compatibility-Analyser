@@ -9,10 +9,11 @@ import Image from 'next/image';
 interface UploadResumeProps {
     selectedFiles: Array<File>;
     setSelectedFiles: (files: Array<File>) => void;
+    plainTextMode: boolean;
 }
 
 
-const UploadResume = ({ selectedFiles, setSelectedFiles }: UploadResumeProps) => {
+const UploadResume = ({ selectedFiles, setSelectedFiles, plainTextMode }: UploadResumeProps) => {
 
     const FileList = () => {
         return (
@@ -25,7 +26,7 @@ const UploadResume = ({ selectedFiles, setSelectedFiles }: UploadResumeProps) =>
                     borderRadius: 1,
                     alignItems: 'center',
                     cursor: 'pointer',
-                    minHeight: 70,
+                    minHeight: plainTextMode ? 70 :120,
                     // maxHeight: 70,
                     // overflowY: 'auto'
                     overFlowX: 'auto'

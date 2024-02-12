@@ -1,13 +1,13 @@
 "use client"
 import React, {useState} from 'react';
-import { CompatibilityListElement } from "../api/api";
+import { CompatibilityListElement, JobDesSkill, calculateCompatibility } from '../utils';
 import { Accordion, AccordionSummary, AccordionDetails, Typography, Chip, Grid, styled, LinearProgress, Box, Divider } from "@mui/material";
 import Title from '../components/Title';
 
 interface RankedResumesProps {
   sortedList : Array<CompatibilityListElement>;
   setSortedList : (sortedList: Array<CompatibilityListElement>) => void;
-  jobDesSkillList : Array<string>;
+  jobDesSkillList : Array<JobDesSkill>;
 }
 
 const CustomLinearProgress = styled(LinearProgress)({
@@ -19,20 +19,20 @@ const CustomLinearProgress = styled(LinearProgress)({
 });
 
 const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedResumesProps) => {
-    const [disabledSkills, setDisabledSkills] = useState<Array<string>>([]);
-    const handleToggleSkill = (skill: string) => {
+    const [disabledSkills, setDisabledSkills] = useState<Array<JobDesSkill>>([]);
+    const handleToggleSkill = (skill: JobDesSkill) => {
         // go through each element in the list and remove the skill if it exists in jobDes_skills
         // while doing this, recalculating the compatibility score
         // set the new compatibilityList
         // re-sort the list
         let deleteMode = false;
         const newSortedList = sortedList.map((item) => {
-            if (item.jobDes_skills.includes(skill)) {
+            if (item.jobDes_skills.some((s) => s.skill === skill.skill)) {
                 // delete skill from jobDes_skills and compat_skills if exists, and recalculate compatibility
                 deleteMode = true;
-                const newJobDesSkills = item.jobDes_skills.filter((s) => s !== skill);
-                const newCompatSkills = item.compat_skills.filter((s) => s !== skill);
-                const newCompatibility = newCompatSkills.length / newJobDesSkills.length;
+                const newJobDesSkills = item.jobDes_skills.filter((s) => s.skill !== skill.skill);
+                const newCompatSkills = item.compat_skills.filter((s) => s.skill !== skill.skill);
+                const newCompatibility = calculateCompatibility(newCompatSkills, newJobDesSkills);
                 return {
                     ...item,
                     jobDes_skills: newJobDesSkills,
@@ -42,8 +42,8 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
             } else {
                 // the skill needs to be added back to jobDes_skills and if it's also in resume_skills, add it to compat_skills
                 const newJobDesSkills = [...item.jobDes_skills, skill];
-                const newCompatSkills = item.resume_skills.includes(skill) ? [...item.compat_skills, skill] : item.compat_skills;
-                const newCompatibility = newCompatSkills.length / newJobDesSkills.length;
+                const newCompatSkills = item.resume_skills.includes(skill.skill) ? [...item.compat_skills, skill] : item.compat_skills;
+                const newCompatibility = calculateCompatibility(newCompatSkills, newJobDesSkills);
                 return {
                     ...item,
                     jobDes_skills: newJobDesSkills,
@@ -70,8 +70,8 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
             <AccordionDetails>
                 <Grid container spacing={1}>
                     {jobDesSkillList.map((skill) => (
-                        <Grid item key={skill}>
-                            <Chip label={skill}
+                        <Grid item key={skill.skill}>
+                            <Chip label={skill.skill}
                                 clickable
                                 color={disabledSkills.includes(skill) ? "secondary" : "primary"}
                                 sx = {{
@@ -120,8 +120,8 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
                         <Typography variant="h6">Job Description Skills:</Typography>
                         <Grid container spacing={1}>
                         {item.jobDes_skills.map((skill) => (
-                            <Grid item key={skill}>
-                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "success" : "error"} />
+                            <Grid item key={skill.skill}>
+                            <Chip label={skill.skill} color={item.compat_skills.includes(skill) ? "success" : "error"} />
                             </Grid>
                         ))}
                         </Grid>
@@ -129,7 +129,7 @@ const RankedResumes = ({ sortedList, setSortedList, jobDesSkillList }: RankedRes
                         <Grid container spacing={1}>
                         {item.resume_skills.map((skill) => (
                             <Grid item key={skill}>
-                            <Chip label={skill} color={item.compat_skills.includes(skill) ? "success" : "error"} />
+                            <Chip label={skill} color={item.compat_skills.some((s) => s.skill === skill) ? "success" : "error"} />
                             </Grid>
                         ))}
                         </Grid>
