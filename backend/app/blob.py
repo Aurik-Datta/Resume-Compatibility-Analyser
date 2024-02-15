@@ -147,7 +147,7 @@ async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsCl
             pretty_print_analysis_result(analysis_result)
 
     # filter skills from recognized entities
-    skills = list(set([entity.text.lower() for entity in recognized_entities if entity.category == "Skill"]))
+    skills = list(set([entity.text.lower() for entity in recognized_entities if entity.category == "Skill" or entity.category== "Product"]))
     lemmatized_skills = list(set(lemmatize_skills(skills)))
     return lemmatized_skills
 
