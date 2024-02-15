@@ -139,10 +139,12 @@ async def get_skills_from_text(text: str, text_analytics_client: TextAnalyticsCl
     ).result()
     recognized_entities = []
     for document_analysis in response:
+        # convert document_analysis into a csv
+        print(document_analysis)
         for analysis_result in document_analysis:
             if analysis_result.kind == "EntityRecognition":
                 recognized_entities = analysis_result.entities
-            #pretty_print_analysis_result(analysis_result)
+            pretty_print_analysis_result(analysis_result)
 
     # filter skills from recognized entities
     skills = list(set([entity.text.lower() for entity in recognized_entities if entity.category == "Skill"]))
